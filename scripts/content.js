@@ -1,8 +1,8 @@
 async function isPawnMenacing(plateau, color, position) {
     let piecesInDanger = [];
-    const switchState = await getSwitchState();
+    const colorState = await getColorState();
     
-    if ((color === 'w' && switchState) || (color === 'b' && !switchState)) {
+    if ((color === 'w' && colorState) || (color === 'b' && !colorState)) {
         let piece = isPieceHere(plateau, color, `${parseInt(position[0]) - 1}${parseInt(position[1]) + 1}`);
         if (piece) {
             piecesInDanger.push(piece);
@@ -344,10 +344,20 @@ async function getPiecesInDanger(plateau) {
     return piecesInDanger;
 }
 
-async function getSwitchState() {
-    const result = await chrome.storage.sync.get(['switchState']);
-    const switchState = result.switchState;
-    if (switchState) {
+async function getColorState() {
+    const result = await chrome.storage.sync.get(['colorState']);
+    const colorState = result.colorState;
+    if (colorState) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+async function getActivationState() {
+    const result = await chrome.storage.sync.get(['activationState']);
+    const activationState = result.activationState;
+    if (activationState) {
         return false;
     } else {
         return true;
@@ -384,15 +394,17 @@ try {
                         highlight.remove();
                     });
 
-                    const formatedPieces = [...pieces].map(piece => piece.className.split(' ').slice(1).join(' '));
-                    const piecesInDanger = [...new Set(await getPiecesInDanger(formatedPieces))];
+                    if (await getActivationState()) {
+                        const formatedPieces = [...pieces].map(piece => piece.className.split(' ').slice(1).join(' '));
+                        const piecesInDanger = [...new Set(await getPiecesInDanger(formatedPieces))];
 
-                    for (const piece of piecesInDanger) {
-                        const div = document.createElement("div");
-                        div.classList.add("highlight", piece.split(' ')[1], "chess-com-helper");
-                        div.style = "background-color: rgb(255, 0, 0); opacity: 0.5;"
-                        div.setAttribute("data-test-element", "highlight");
-                        board.insertAdjacentElement("afterbegin", div);
+                        for (const piece of piecesInDanger) {
+                            const div = document.createElement("div");
+                            div.classList.add("highlight", piece.split(' ')[1], "chess-com-helper");
+                            div.style = "background-color: rgb(255, 0, 0); opacity: 0.5;"
+                            div.setAttribute("data-test-element", "highlight");
+                            board.insertAdjacentElement("afterbegin", div);
+                        }
                     }
                 }
             }

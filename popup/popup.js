@@ -1,15 +1,25 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const toggleSwitch = document.getElementById('toggleSwitchColor');
+    const toggleSwitchColor = document.getElementById('toggleSwitchColor');
+    const toggleSwitchActivation = document.getElementById('toggleSwitchActivation');
 
-    chrome.storage.sync.get(['switchState'], function (result) {
-        if (result.switchState !== undefined) {
-            toggleSwitch.checked = result.switchState;
+    chrome.storage.sync.get(['colorState', 'activationState'], function (result) {
+        if (result.colorState !== undefined) {
+            toggleSwitchColor.checked = result.colorState;
+        }
+        if (result.activationState !== undefined) {
+            toggleSwitchActivation.checked = result.activationState;
         }
     });
 
-    toggleSwitch.addEventListener('change', function () {
-        chrome.storage.sync.set({ switchState: toggleSwitch.checked }, function () {
-            console.log('Switch state saved:', toggleSwitch.checked);
+    toggleSwitchColor.addEventListener('change', function () {
+        chrome.storage.sync.set({ colorState: toggleSwitchColor.checked }, function () {
+            console.log('Switch color state saved:', toggleSwitchColor.checked);
+        });
+    });
+
+    toggleSwitchActivation.addEventListener('change', function () {
+        chrome.storage.sync.set({ activationState: toggleSwitchActivation.checked }, function () {
+            console.log('Switch activation state saved:', toggleSwitchActivation.checked);
         });
     });
 });

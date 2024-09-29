@@ -41,3 +41,6 @@ This extension won't collect any data and will only work on chess.com.
 
 - Version 1.1 :
     - Added a popup to the extension button to choose your color for the current game.
+
+- Version 1.2 :
+    - Added a switch to the popup to activate/deactivate the extension easily.
