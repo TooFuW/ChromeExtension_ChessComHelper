@@ -1,6 +1,6 @@
 # ChessComHelper
 
-Version: 1.0
+Version: 1.1
 
 ChessComHelper is a Chrome extension that highlights the threatened pieces on Chess.com. Whenever a piece is in danger of being captured, it will be highlighted in red for better visibility and analysis during the game.
 
@@ -28,6 +28,16 @@ Start a game on Chess.com.
 
 When one of your pieces is threatened, it will be highlighted in red so you can respond accordingly.
 
+![Example](https://github.com/TooFuW/ChromeExtension_ChessComHelper/blob/main/images/example.png)
+
 ## Authorizations
 
 This extension won't collect any data and will only work on chess.com.
+
+## Changelog
+
+- Version 1.0 : 
+    - Initial Realease.
+
+- Version 1.1 :
+    - Added a popup to the extension button to choose your color for the current game.

@@ -1,7 +1,8 @@
-function isPawnMenacing(plateau, color, position) {
+async function isPawnMenacing(plateau, color, position) {
     let piecesInDanger = [];
-
-    if (color === 'w') {
+    const switchState = await getSwitchState();
+    
+    if ((color === 'w' && switchState) || (color === 'b' && !switchState)) {
         let piece = isPieceHere(plateau, color, `${parseInt(position[0]) - 1}${parseInt(position[1]) + 1}`);
         if (piece) {
             piecesInDanger.push(piece);
@@ -12,7 +13,7 @@ function isPawnMenacing(plateau, color, position) {
         }
     }
 
-    else if (color === 'b') {
+    else {
         let piece = isPieceHere(plateau, color, `${parseInt(position[0]) - 1}${parseInt(position[1]) - 1}`);
         if (piece) {
             piecesInDanger.push(piece);
@@ -309,13 +310,13 @@ function isPieceHere(plateau, color, position) {
     }
 }
 
-function getPiecesInDanger(plateau) {
+async function getPiecesInDanger(plateau) {
     let piecesInDanger = [];
 
     for (const piece of plateau) {
         switch (piece.split(' ')[0][1]) {
             case 'p':
-                piecesInDanger.push(...isPawnMenacing(plateau, piece.split(' ')[0][0], piece.split(' ')[1].slice(-2)));
+                piecesInDanger.push(...await isPawnMenacing(plateau, piece.split(' ')[0][0], piece.split(' ')[1].slice(-2)));
                 break;
 
             case 'r':
@@ -343,12 +344,31 @@ function getPiecesInDanger(plateau) {
     return piecesInDanger;
 }
 
+async function getSwitchState() {
+    const result = await chrome.storage.sync.get(['switchState']);
+    const switchState = result.switchState;
+    if (switchState) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
 try {
+    const warningPopup = document.querySelector(".new-game-index-content");
+    if(warningPopup) {
+        const warningMessage = document.createElement("p");
+        warningMessage.textContent = "Don't forget to select your color in the extension popup when the game starts !";
+        warningMessage.classList.add("cc-heading-xx-small");
+        warningMessage.style = "text-align: center; margin-top: 20px; color: red;";
+        warningPopup.insertAdjacentElement("afterbegin", warningMessage);
+    }
+
     const board = document.querySelector("wc-chess-board");
 
     let pieces = board.querySelectorAll(".piece");
 
-    function callback(mutationList, observer) {
+    async function callback(mutationList, observer) {
         for (let mutation of mutationList) {
             if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                 const target = mutation.target;
@@ -365,7 +385,7 @@ try {
                     });
 
                     const formatedPieces = [...pieces].map(piece => piece.className.split(' ').slice(1).join(' '));
-                    const piecesInDanger = [...new Set(getPiecesInDanger(formatedPieces))];
+                    const piecesInDanger = [...new Set(await getPiecesInDanger(formatedPieces))];
 
                     for (const piece of piecesInDanger) {
                         const div = document.createElement("div");
