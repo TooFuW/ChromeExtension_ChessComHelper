@@ -364,58 +364,59 @@ async function getActivationState() {
     }
 }
 
-try {
-    const warningPopup = document.querySelector(".new-game-index-content");
-    if(warningPopup) {
-        const warningMessage = document.createElement("p");
-        warningMessage.textContent = "Don't forget to select your color in the extension popup when the game starts !";
-        warningMessage.classList.add("cc-heading-xx-small");
-        warningMessage.style = "text-align: center; margin-top: 20px; color: red;";
-        warningPopup.insertAdjacentElement("afterbegin", warningMessage);
-    }
+setTimeout(() => {
+    try {
+        const warningPopup = document.querySelector(".new-game-index-content");
+        if(warningPopup) {
+            const warningMessage = document.createElement("p");
+            warningMessage.textContent = "Don't forget to select your color in the extension popup when the game starts !";
+            warningMessage.classList.add("cc-heading-xx-small");
+            warningMessage.style = "text-align: center; margin-top: 20px; color: red;";
+            warningPopup.insertAdjacentElement("afterbegin", warningMessage);
+        }
 
-    const board = document.querySelector("wc-chess-board");
+        let pieces = document.querySelectorAll(".piece");
+        console.log(pieces);
 
-    let pieces = board.querySelectorAll(".piece");
+        async function callback(mutationList, observer) {
+            for (let mutation of mutationList) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    const target = mutation.target;
+                    const oldClass = mutation.oldValue;
+                    const newClass = target.className;
 
-    async function callback(mutationList, observer) {
-        for (let mutation of mutationList) {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                const target = mutation.target;
-                const oldClass = mutation.oldValue;
-                const newClass = target.className;
+                    const oldSquareClass = oldClass.split(' ').find(cls => cls.startsWith('square-'));
+                    const newSquareClass = newClass.split(' ').find(cls => cls.startsWith('square-'));
 
-                const oldSquareClass = oldClass.split(' ').find(cls => cls.startsWith('square-'));
-                const newSquareClass = newClass.split(' ').find(cls => cls.startsWith('square-'));
+                    if (oldSquareClass !== newSquareClass) {
+                        const oldHighlights = document.querySelector("wc-chess-board").querySelectorAll(".chess-com-helper");
+                        oldHighlights.forEach(highlight => {
+                            highlight.remove();
+                        });
 
-                if (oldSquareClass !== newSquareClass) {
-                    const oldHighlights = board.querySelectorAll(".highlight");
-                    oldHighlights.forEach(highlight => {
-                        highlight.remove();
-                    });
+                        if (await getActivationState()) {
+                            const formatedPieces = [...pieces].map(piece => piece.className.split(' ').slice(1).join(' '));
+                            const piecesInDanger = [...new Set(await getPiecesInDanger(formatedPieces))];
 
-                    if (await getActivationState()) {
-                        const formatedPieces = [...pieces].map(piece => piece.className.split(' ').slice(1).join(' '));
-                        const piecesInDanger = [...new Set(await getPiecesInDanger(formatedPieces))];
-
-                        for (const piece of piecesInDanger) {
-                            const div = document.createElement("div");
-                            div.classList.add("highlight", piece.split(' ')[1], "chess-com-helper");
-                            div.style = "background-color: rgb(255, 0, 0); opacity: 0.5;"
-                            div.setAttribute("data-test-element", "highlight");
-                            board.insertAdjacentElement("afterbegin", div);
+                            for (const piece of piecesInDanger) {
+                                const div = document.createElement("div");
+                                div.classList.add("highlight", piece.split(' ')[1], "chess-com-helper");
+                                div.style = "background-color: rgb(255, 0, 0); opacity: 0.5;"
+                                div.setAttribute("data-test-element", "highlight");
+                                document.querySelector("wc-chess-board").insertAdjacentElement("afterbegin", div);
+                            }
                         }
                     }
                 }
             }
         }
-    }
 
-    const observer = new MutationObserver(callback);
-    pieces.forEach(piece => {
-        observer.observe(piece, { attributes: true, attributeOldValue: true, attributeFilter: ['class'] });
-    });
-}
-catch (error) {
-    console.log(error);
-}
+        const observer = new MutationObserver(callback);
+        pieces.forEach(piece => {
+            observer.observe(piece, { attributes: true, attributeOldValue: true, attributeFilter: ['class'] });
+        });
+    }
+    catch (error) {
+        console.log(error);
+    }
+}, 5000);

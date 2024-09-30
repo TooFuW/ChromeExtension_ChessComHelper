@@ -50,3 +50,6 @@ This extension won't collect any data and will only work on chess.com.
 
 - Version 1.2 :
     - Added a switch to the popup to activate/deactivate the extension easily.
+
+- Version 1.2.1 :
+    - Bug fixed : The extension will now wait 5 secondes before starting (previously some errors where happening because the DOM hasn't loaded yet)
