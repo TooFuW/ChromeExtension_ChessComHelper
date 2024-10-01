@@ -364,59 +364,62 @@ async function getActivationState() {
     }
 }
 
-setTimeout(() => {
-    try {
-        const warningPopup = document.querySelector(".new-game-index-content");
-        if(warningPopup) {
-            const warningMessage = document.createElement("p");
-            warningMessage.textContent = "Don't forget to select your color in the extension popup when the game starts !";
-            warningMessage.classList.add("cc-heading-xx-small");
-            warningMessage.style = "text-align: center; margin-top: 20px; color: red;";
-            warningPopup.insertAdjacentElement("afterbegin", warningMessage);
-        }
+try {
+    const warningPopup = document.querySelector(".new-game-index-content");
+    if(warningPopup) {
+        const warningMessage = document.createElement("p");
+        warningMessage.textContent = "Don't forget to select your color in the extension popup when the game starts !";
+        warningMessage.classList.add("cc-heading-xx-small");
+        warningMessage.style = "text-align: center; margin-top: 20px; color: red;";
+        warningPopup.insertAdjacentElement("afterbegin", warningMessage);
+    }
 
+    let intervalId = setInterval(() => {
         let pieces = document.querySelectorAll(".piece");
-        console.log(pieces);
+        if (pieces.length > 0) {
 
-        async function callback(mutationList, observer) {
-            for (let mutation of mutationList) {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                    const target = mutation.target;
-                    const oldClass = mutation.oldValue;
-                    const newClass = target.className;
-
-                    const oldSquareClass = oldClass.split(' ').find(cls => cls.startsWith('square-'));
-                    const newSquareClass = newClass.split(' ').find(cls => cls.startsWith('square-'));
-
-                    if (oldSquareClass !== newSquareClass) {
-                        const oldHighlights = document.querySelector("wc-chess-board").querySelectorAll(".chess-com-helper");
-                        oldHighlights.forEach(highlight => {
-                            highlight.remove();
-                        });
-
-                        if (await getActivationState()) {
-                            const formatedPieces = [...pieces].map(piece => piece.className.split(' ').slice(1).join(' '));
-                            const piecesInDanger = [...new Set(await getPiecesInDanger(formatedPieces))];
-
-                            for (const piece of piecesInDanger) {
-                                const div = document.createElement("div");
-                                div.classList.add("highlight", piece.split(' ')[1], "chess-com-helper");
-                                div.style = "background-color: rgb(255, 0, 0); opacity: 0.5;"
-                                div.setAttribute("data-test-element", "highlight");
-                                document.querySelector("wc-chess-board").insertAdjacentElement("afterbegin", div);
+            async function callback(mutationList, observer) {
+                for (let mutation of mutationList) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                        const target = mutation.target;
+                        const oldClass = mutation.oldValue;
+                        const newClass = target.className;
+        
+                        const oldSquareClass = oldClass.split(' ').find(cls => cls.startsWith('square-'));
+                        const newSquareClass = newClass.split(' ').find(cls => cls.startsWith('square-'));
+        
+                        if (oldSquareClass !== newSquareClass) {
+                            const oldHighlights = document.querySelector("wc-chess-board").querySelectorAll(".chess-com-helper");
+                            oldHighlights.forEach(highlight => {
+                                highlight.remove();
+                            });
+        
+                            if (await getActivationState()) {
+                                const formatedPieces = [...pieces].map(piece => piece.className.split(' ').slice(1).join(' '));
+                                const piecesInDanger = [...new Set(await getPiecesInDanger(formatedPieces))];
+        
+                                for (const piece of piecesInDanger) {
+                                    const div = document.createElement("div");
+                                    div.classList.add("highlight", piece.split(' ')[1], "chess-com-helper");
+                                    div.style = "background-color: rgb(255, 0, 0); opacity: 0.5;"
+                                    div.setAttribute("data-test-element", "highlight");
+                                    document.querySelector("wc-chess-board").insertAdjacentElement("afterbegin", div);
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        const observer = new MutationObserver(callback);
-        pieces.forEach(piece => {
-            observer.observe(piece, { attributes: true, attributeOldValue: true, attributeFilter: ['class'] });
-        });
-    }
-    catch (error) {
-        console.log(error);
-    }
-}, 5000);
+            const observer = new MutationObserver(callback);
+            pieces.forEach(piece => {
+                observer.observe(piece, { attributes: true, attributeOldValue: true, attributeFilter: ['class'] });
+            });
+            
+            clearInterval(intervalId);
+        }
+    }, 500);
+}
+catch (error) {
+    console.log(error);
+}
