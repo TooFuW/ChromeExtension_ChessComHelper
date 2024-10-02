@@ -48,7 +48,7 @@ body {
     padding: 0;
 }
 
-#title {
+div#title {
     text-align: center;
     font-weight: bold;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -61,19 +61,19 @@ body {
     border-bottom: solid 2px black;
 }
 
-#content {
+div#content {
     text-align: center;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     padding-bottom: 10px;
 }
 
-.choice {
+div.choice {
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.choice p {
+div.choice p {
     margin-right: 20px;
     margin-left: 20px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
